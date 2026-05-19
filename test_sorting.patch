@@ -1,0 +1,22 @@
+--- src/module/post/component/ListPostComponent.tsx
++++ src/module/post/component/ListPostComponent.tsx
+@@ -22,7 +22,10 @@
+     })
+ 
+     // Sorting State
+     const [sorting, setSorting] = useState<SortingState>([{ id: 'createAt', desc: true }])
++    const handleSortingChange = (updater: any) => {
++        console.log("handleSortingChange called with:", updater);
++        setSorting(updater);
++    }
+ 
+     // Filter States
+@@ -124,7 +127,7 @@
+                     pagination={pagination}
+                     setPagination={setPagination}
+                     sorting={sorting}
+-                    onSortingChange={setSorting}
++                    onSortingChange={handleSortingChange}
+                     isLoading={isLoading}
+                 />
+             </div>
