@@ -5,7 +5,7 @@ import type { ErrorMessage } from '#/lib/http.client'
 import { useNavigateErrorPage } from '#/hooks/use-navigate-error-page'
 import type { AuthTokenDto, LoginRequestDto } from '../dto'
 import type { AbstractForm } from '#/utils/validate-form'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { useAuth } from '../context/auth-context'
 
 const loginFormRules: AbstractForm<LoginRequestDto> = {
@@ -24,7 +24,7 @@ const loginFormRules: AbstractForm<LoginRequestDto> = {
 export function LoginComponent() {
     const [authService] = useState(() => new AuthService())
     const authContext = useAuth()
-    
+
     const [loginRequestState, setLoginRequest] = useState<LoginRequestDto>({
         email: '',
         password: '',
@@ -46,18 +46,21 @@ export function LoginComponent() {
         },
     })
 
+    const searchParams = useSearch({ strict: false }) as { redirect?: string }
+
     const loginMutation = useMutation({
         mutationFn: () => authService.login(loginRequestState),
-        onSuccess: (result : AuthTokenDto) => {
+        onSuccess: (result: AuthTokenDto) => {
             authContext.setToken(result)
-            navigate({ to: '/' })
+            const targetUrl = searchParams.redirect || '/public/laptops'
+            navigate({ to: targetUrl as any })
         }
     })
 
     const validateBeforeLogin = () => {
         let isValid = true
         const newErrors: Partial<Record<keyof LoginRequestDto, string>> = {}
-        
+
         // Lặp qua các rules để validate
         for (const key in loginFormRules) {
             const field = key as keyof LoginRequestDto
@@ -70,7 +73,7 @@ export function LoginComponent() {
                 }
             }
         }
-        
+
         setErrors(newErrors)
         return isValid
     }
@@ -84,7 +87,7 @@ export function LoginComponent() {
     const handleInputChange = (field: keyof LoginRequestDto) => (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value
         setLoginRequest(prev => ({ ...prev, [field]: value }))
-        
+
         // Reset error text khi user type
         if (errors[field]) {
             setErrors(prev => ({ ...prev, [field]: undefined }))
@@ -202,7 +205,7 @@ export function LoginComponent() {
                             )}
                         </div>
 
-                        <button 
+                        <button
                             onClick={handleLogin}
                             disabled={loginMutation.isPending}
                             className="mt-4 flex w-full items-center justify-center rounded-10 bg-static-black px-4 py-3 text-label-sm font-semibold text-static-white shadow-fancy-buttons-neutral transition-all hover:bg-neutral-800 active:scale-[0.98] disabled:opacity-50 dark:bg-primary-base dark:hover:bg-blue-600">

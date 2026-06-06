@@ -16,6 +16,9 @@ import { DatePicker } from '#/components/ui/date-picker-ui'
 import { MultiSelect } from '#/components/base/select/multi-select'
 import { useSearchLaptop } from '#/module/laptop/hooks/use-search-laptop'
 import type { Selection } from "react-aria-components"
+import { useSearchUsers } from '#/module/users/hooks/use-search-users'
+import type { SelectItemType } from '#/components/base/select/select-shared'
+import type { BaseError } from '#/lib/dto/base-error'
 
 const discountService = new DiscountService()
 
@@ -52,7 +55,7 @@ export function CreateDiscountComponent() {
         expiryTo: '',
         isActive: 1,
         value: 0,
-        laptopIds: [],
+        moduleIds: [],
     })
 
     const [errors, setErrors] = useState<Partial<Record<keyof CreateDiscountRequest, string>>>({})
@@ -114,8 +117,12 @@ export function CreateDiscountComponent() {
             navigate({ to: '/admin/discounts' })
             toastSuccess('Tạo khuyến mãi thành công')
         },
-        onError: () => {
-            toastError('Tạo khuyến mãi thất bại')
+        onError: (error: BaseError) => {
+            if (error?.status === 409) {
+                toastError("Mã Code đã tồn tại!")
+            } else {
+                toastError('Tạo khuyến mãi thất bại')
+            }
         }
     })
 
@@ -127,9 +134,11 @@ export function CreateDiscountComponent() {
 
         const dataToSubmit = {
             ...formState,
-            expiryFrom: formState.expiryFrom?.includes('T') ? formState.expiryFrom : formState.expiryFrom + "T00:00:00",
-            expiryTo: formState.expiryTo?.includes('T') ? formState.expiryTo : formState.expiryTo + "T23:59:59"
+            expiryFrom: formState.expiryFrom ? formState.expiryFrom?.includes('T') ? formState.expiryFrom : formState.expiryFrom + "T00:00:00" : '',
+            expiryTo: formState.expiryTo ? formState.expiryTo?.includes('T') ? formState.expiryTo : formState.expiryTo + "T23:59:59" : ''
         }
+        console.log('formState', formState)
+        console.log('dataToSubmit', dataToSubmit)
 
         createMutation.mutate(dataToSubmit)
     }
@@ -147,29 +156,34 @@ export function CreateDiscountComponent() {
         queryKey: ['laptops']
     })
 
-    const handleSelectionLaptopChange = (keys: Selection) => {
+    const { options: userOptions, input: userInput, setInput: setUserInput } = useSearchUsers({
+        params: 'email:ct',
+        queryKey: ['users']
+    })
+
+    const handleSelectionChange = (field: keyof CreateDiscountRequest, keys: Selection, options: SelectItemType[] | undefined) => {
         if (keys === 'all') {
             setFormState(prev => ({ 
                 ...prev, 
-                laptopIds: laptopOptions?.map((item) => Number(item.id)) || [] 
+                [field]: options?.map((item) => Number(item.id)) || [] 
             }));
         } else {
             setFormState(prev => ({ 
                 ...prev, 
-                laptopIds: Array.from(keys).map((key) => Number(key)) 
+                [field]: Array.from(keys).map((key) => Number(key)) 
             }));
         }
     }
 
-    const handleSelectAllLaptop = () => {
+    const handleSelectAll = (field: keyof CreateDiscountRequest, options: SelectItemType[] | undefined) => {
         setFormState(prev => ({ 
             ...prev, 
-            laptopIds: laptopOptions?.map((item) => Number(item.id)) || [] 
+            [field]: options?.map((item) => Number(item.id)) || [] 
         }));
     }
 
-    const handleResetLaptopSelection = () => {
-        setFormState(prev => ({ ...prev, laptopIds: [] }));
+    const handleSelectNone = (field: keyof CreateDiscountRequest) => {
+        setFormState(prev => ({ ...prev, [field]: [] }));
     }
 
     return (
@@ -305,11 +319,33 @@ export function CreateDiscountComponent() {
                                             className="!bg-white"
                                             placeholder="Chọn đối tượng áp dụng"
                                             items={laptopOptions}
-                                            selectedKeys={new Set(formState.laptopIds?.map((id) => id.toString()))}
-                                            onSelectionChange={handleSelectionLaptopChange}
-                                            supportingText={`${formState.laptopIds?.length || 0} đã chọn`}
-                                            onReset={handleResetLaptopSelection}
-                                            onSelectAll={handleSelectAllLaptop}
+                                            selectedKeys={new Set(formState.moduleIds?.map((id) => id.toString()))}
+                                            onSelectionChange={(keys) => handleSelectionChange('moduleIds', keys, laptopOptions)}
+                                            supportingText={`${formState.moduleIds?.length || 0} đã chọn`}
+                                            onReset={() => handleSelectNone('moduleIds')}
+                                            onSelectAll={() => handleSelectAll('moduleIds', laptopOptions)}
+                                        >
+                                            {(item) => (
+                                                <MultiSelect.Item id={item.id} textValue={item.label} selectionIndicator="checkbox" selectionIndicatorAlign="left">
+                                                    {item.label}
+                                                </MultiSelect.Item>
+                                            )}
+                                        </MultiSelect>
+                                    </div>
+                                    <div>
+                                        <label className="text-label-sm font-semibold text-text-sub-600 dark:text-text-soft-400 mb-2 block">
+                                            Người dùng áp dụng
+                                        </label>
+                                        <MultiSelect
+                                            size="sm"
+                                            className="!bg-white"
+                                            placeholder="Chọn người dùng"
+                                            items={userOptions}
+                                            selectedKeys={new Set(formState.userIds?.map((id) => id.toString()))}
+                                            onSelectionChange={(keys) => handleSelectionChange('userIds', keys, userOptions)}
+                                            supportingText={`${formState.userIds?.length || 0} đã chọn`}
+                                            onReset={() => handleSelectNone('userIds')}
+                                            onSelectAll={() => handleSelectAll('userIds', userOptions)}
                                         >
                                             {(item) => (
                                                 <MultiSelect.Item id={item.id} textValue={item.label} selectionIndicator="checkbox" selectionIndicatorAlign="left">

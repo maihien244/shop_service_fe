@@ -51,4 +51,5 @@ export type UserDto = {
     email: string
     phoneNumber: string
     isActive: number
+    role?: string
 }

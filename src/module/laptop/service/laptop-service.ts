@@ -1,6 +1,7 @@
 import { ApiClient, type CollectionResponse, type HttpClient } from "#/lib/http.client";
-import type { CreateLaptopRequest, LaptopResponse } from "../dto";
+import type { CreateLaptopRequest, LaptopResponse, OptionLaptopResponse } from "../dto";
 import { BaseParams } from "#/lib/dto/base-params";
+import type { WarehouseDto } from "#/module/warehouse/dto/warehouse.dto";
 
 export class GetListLaptopRequest extends BaseParams {
     'name:ct'?: string
@@ -42,5 +43,13 @@ export class LaptopService {
 
     async getList(params?: GetListLaptopRequest) : Promise<CollectionResponse<LaptopResponse>> {
         return await this.apiClient.get<CollectionResponse<LaptopResponse>>(this.adminUrl, { params })
+    }
+
+    async getListPublic(params?: GetListLaptopRequest) : Promise<CollectionResponse<LaptopResponse>> {
+        return await this.apiClient.get<CollectionResponse<LaptopResponse>>(this.clientUrl, { params })
+    }
+
+    async getOptionsOfLaptop(id: number) : Promise<CollectionResponse<OptionLaptopResponse>> {
+        return await this.apiClient.get<CollectionResponse<OptionLaptopResponse>>(`${this.adminUrl}/${id}/options`)
     }
 }

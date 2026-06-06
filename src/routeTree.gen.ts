@@ -9,23 +9,46 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UsersRouteImport } from './routes/users'
+import { Route as PublicRouteImport } from './routes/public'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ErrorIndexRouteImport } from './routes/error/index'
 import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
+import { Route as UsersOrdersIndexRouteImport } from './routes/users/orders/index'
+import { Route as UsersCartsIndexRouteImport } from './routes/users/carts/index'
+import { Route as PublicPostsIndexRouteImport } from './routes/public/posts/index'
+import { Route as PublicLaptopsIndexRouteImport } from './routes/public/laptops/index'
 import { Route as AdminWarehousesIndexRouteImport } from './routes/admin/warehouses/index'
 import { Route as AdminPostsIndexRouteImport } from './routes/admin/posts/index'
+import { Route as AdminOrdersIndexRouteImport } from './routes/admin/orders/index'
 import { Route as AdminLaptopsIndexRouteImport } from './routes/admin/laptops/index'
 import { Route as AdminDiscountsIndexRouteImport } from './routes/admin/discounts/index'
+import { Route as AdminDashboardIndexRouteImport } from './routes/admin/dashboard/index'
 import { Route as AdminCategoriesIndexRouteImport } from './routes/admin/categories/index'
+import { Route as UsersPaymentOrderIdRouteImport } from './routes/users/payment/$orderId'
+import { Route as UsersOrdersOrderIdRouteImport } from './routes/users/orders/$orderId'
+import { Route as PublicPostsSlugRouteImport } from './routes/public/posts/$slug'
+import { Route as PublicLaptopsSlugRouteImport } from './routes/public/laptops/$slug'
 import { Route as AuthSsoCallbackRouteImport } from './routes/auth/sso/callback'
 import { Route as AdminWarehousesStorageRouteImport } from './routes/admin/warehouses/storage'
 import { Route as AdminPostsCreateRouteImport } from './routes/admin/posts/create'
+import { Route as AdminOrdersOrderIdRouteImport } from './routes/admin/orders/$orderId'
 import { Route as AdminLaptopsCreateRouteImport } from './routes/admin/laptops/create'
 import { Route as AdminDiscountsCreateRouteImport } from './routes/admin/discounts/create'
 import { Route as AdminCategoriesBaseRouteImport } from './routes/admin/categories/base'
 
+const UsersRoute = UsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PublicRoute = PublicRouteImport.update({
+  id: '/public',
+  path: '/public',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -51,6 +74,26 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/auth/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UsersOrdersIndexRoute = UsersOrdersIndexRouteImport.update({
+  id: '/orders/',
+  path: '/orders/',
+  getParentRoute: () => UsersRoute,
+} as any)
+const UsersCartsIndexRoute = UsersCartsIndexRouteImport.update({
+  id: '/carts/',
+  path: '/carts/',
+  getParentRoute: () => UsersRoute,
+} as any)
+const PublicPostsIndexRoute = PublicPostsIndexRouteImport.update({
+  id: '/posts/',
+  path: '/posts/',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicLaptopsIndexRoute = PublicLaptopsIndexRouteImport.update({
+  id: '/laptops/',
+  path: '/laptops/',
+  getParentRoute: () => PublicRoute,
+} as any)
 const AdminWarehousesIndexRoute = AdminWarehousesIndexRouteImport.update({
   id: '/warehouses/',
   path: '/warehouses/',
@@ -59,6 +102,11 @@ const AdminWarehousesIndexRoute = AdminWarehousesIndexRouteImport.update({
 const AdminPostsIndexRoute = AdminPostsIndexRouteImport.update({
   id: '/posts/',
   path: '/posts/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminOrdersIndexRoute = AdminOrdersIndexRouteImport.update({
+  id: '/orders/',
+  path: '/orders/',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminLaptopsIndexRoute = AdminLaptopsIndexRouteImport.update({
@@ -71,10 +119,35 @@ const AdminDiscountsIndexRoute = AdminDiscountsIndexRouteImport.update({
   path: '/discounts/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminDashboardIndexRoute = AdminDashboardIndexRouteImport.update({
+  id: '/dashboard/',
+  path: '/dashboard/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCategoriesIndexRoute = AdminCategoriesIndexRouteImport.update({
   id: '/categories/',
   path: '/categories/',
   getParentRoute: () => AdminRoute,
+} as any)
+const UsersPaymentOrderIdRoute = UsersPaymentOrderIdRouteImport.update({
+  id: '/payment/$orderId',
+  path: '/payment/$orderId',
+  getParentRoute: () => UsersRoute,
+} as any)
+const UsersOrdersOrderIdRoute = UsersOrdersOrderIdRouteImport.update({
+  id: '/orders/$orderId',
+  path: '/orders/$orderId',
+  getParentRoute: () => UsersRoute,
+} as any)
+const PublicPostsSlugRoute = PublicPostsSlugRouteImport.update({
+  id: '/posts/$slug',
+  path: '/posts/$slug',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicLaptopsSlugRoute = PublicLaptopsSlugRouteImport.update({
+  id: '/laptops/$slug',
+  path: '/laptops/$slug',
+  getParentRoute: () => PublicRoute,
 } as any)
 const AuthSsoCallbackRoute = AuthSsoCallbackRouteImport.update({
   id: '/auth/sso/callback',
@@ -89,6 +162,11 @@ const AdminWarehousesStorageRoute = AdminWarehousesStorageRouteImport.update({
 const AdminPostsCreateRoute = AdminPostsCreateRouteImport.update({
   id: '/posts/create',
   path: '/posts/create',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminOrdersOrderIdRoute = AdminOrdersOrderIdRouteImport.update({
+  id: '/orders/$orderId',
+  path: '/orders/$orderId',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminLaptopsCreateRoute = AdminLaptopsCreateRouteImport.update({
@@ -110,118 +188,198 @@ const AdminCategoriesBaseRoute = AdminCategoriesBaseRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/public': typeof PublicRouteWithChildren
+  '/users': typeof UsersRouteWithChildren
   '/auth/login': typeof AuthLoginRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/error/': typeof ErrorIndexRoute
   '/admin/categories/base': typeof AdminCategoriesBaseRoute
   '/admin/discounts/create': typeof AdminDiscountsCreateRoute
   '/admin/laptops/create': typeof AdminLaptopsCreateRoute
+  '/admin/orders/$orderId': typeof AdminOrdersOrderIdRoute
   '/admin/posts/create': typeof AdminPostsCreateRoute
   '/admin/warehouses/storage': typeof AdminWarehousesStorageRoute
   '/auth/sso/callback': typeof AuthSsoCallbackRoute
+  '/public/laptops/$slug': typeof PublicLaptopsSlugRoute
+  '/public/posts/$slug': typeof PublicPostsSlugRoute
+  '/users/orders/$orderId': typeof UsersOrdersOrderIdRoute
+  '/users/payment/$orderId': typeof UsersPaymentOrderIdRoute
   '/admin/categories/': typeof AdminCategoriesIndexRoute
+  '/admin/dashboard/': typeof AdminDashboardIndexRoute
   '/admin/discounts/': typeof AdminDiscountsIndexRoute
   '/admin/laptops/': typeof AdminLaptopsIndexRoute
+  '/admin/orders/': typeof AdminOrdersIndexRoute
   '/admin/posts/': typeof AdminPostsIndexRoute
   '/admin/warehouses/': typeof AdminWarehousesIndexRoute
+  '/public/laptops/': typeof PublicLaptopsIndexRoute
+  '/public/posts/': typeof PublicPostsIndexRoute
+  '/users/carts/': typeof UsersCartsIndexRoute
+  '/users/orders/': typeof UsersOrdersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/public': typeof PublicRouteWithChildren
+  '/users': typeof UsersRouteWithChildren
   '/auth/login': typeof AuthLoginRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/error': typeof ErrorIndexRoute
   '/admin/categories/base': typeof AdminCategoriesBaseRoute
   '/admin/discounts/create': typeof AdminDiscountsCreateRoute
   '/admin/laptops/create': typeof AdminLaptopsCreateRoute
+  '/admin/orders/$orderId': typeof AdminOrdersOrderIdRoute
   '/admin/posts/create': typeof AdminPostsCreateRoute
   '/admin/warehouses/storage': typeof AdminWarehousesStorageRoute
   '/auth/sso/callback': typeof AuthSsoCallbackRoute
+  '/public/laptops/$slug': typeof PublicLaptopsSlugRoute
+  '/public/posts/$slug': typeof PublicPostsSlugRoute
+  '/users/orders/$orderId': typeof UsersOrdersOrderIdRoute
+  '/users/payment/$orderId': typeof UsersPaymentOrderIdRoute
   '/admin/categories': typeof AdminCategoriesIndexRoute
+  '/admin/dashboard': typeof AdminDashboardIndexRoute
   '/admin/discounts': typeof AdminDiscountsIndexRoute
   '/admin/laptops': typeof AdminLaptopsIndexRoute
+  '/admin/orders': typeof AdminOrdersIndexRoute
   '/admin/posts': typeof AdminPostsIndexRoute
   '/admin/warehouses': typeof AdminWarehousesIndexRoute
+  '/public/laptops': typeof PublicLaptopsIndexRoute
+  '/public/posts': typeof PublicPostsIndexRoute
+  '/users/carts': typeof UsersCartsIndexRoute
+  '/users/orders': typeof UsersOrdersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/public': typeof PublicRouteWithChildren
+  '/users': typeof UsersRouteWithChildren
   '/auth/login': typeof AuthLoginRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/error/': typeof ErrorIndexRoute
   '/admin/categories/base': typeof AdminCategoriesBaseRoute
   '/admin/discounts/create': typeof AdminDiscountsCreateRoute
   '/admin/laptops/create': typeof AdminLaptopsCreateRoute
+  '/admin/orders/$orderId': typeof AdminOrdersOrderIdRoute
   '/admin/posts/create': typeof AdminPostsCreateRoute
   '/admin/warehouses/storage': typeof AdminWarehousesStorageRoute
   '/auth/sso/callback': typeof AuthSsoCallbackRoute
+  '/public/laptops/$slug': typeof PublicLaptopsSlugRoute
+  '/public/posts/$slug': typeof PublicPostsSlugRoute
+  '/users/orders/$orderId': typeof UsersOrdersOrderIdRoute
+  '/users/payment/$orderId': typeof UsersPaymentOrderIdRoute
   '/admin/categories/': typeof AdminCategoriesIndexRoute
+  '/admin/dashboard/': typeof AdminDashboardIndexRoute
   '/admin/discounts/': typeof AdminDiscountsIndexRoute
   '/admin/laptops/': typeof AdminLaptopsIndexRoute
+  '/admin/orders/': typeof AdminOrdersIndexRoute
   '/admin/posts/': typeof AdminPostsIndexRoute
   '/admin/warehouses/': typeof AdminWarehousesIndexRoute
+  '/public/laptops/': typeof PublicLaptopsIndexRoute
+  '/public/posts/': typeof PublicPostsIndexRoute
+  '/users/carts/': typeof UsersCartsIndexRoute
+  '/users/orders/': typeof UsersOrdersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/admin'
+    | '/public'
+    | '/users'
     | '/auth/login'
     | '/auth/sign-up'
     | '/error/'
     | '/admin/categories/base'
     | '/admin/discounts/create'
     | '/admin/laptops/create'
+    | '/admin/orders/$orderId'
     | '/admin/posts/create'
     | '/admin/warehouses/storage'
     | '/auth/sso/callback'
+    | '/public/laptops/$slug'
+    | '/public/posts/$slug'
+    | '/users/orders/$orderId'
+    | '/users/payment/$orderId'
     | '/admin/categories/'
+    | '/admin/dashboard/'
     | '/admin/discounts/'
     | '/admin/laptops/'
+    | '/admin/orders/'
     | '/admin/posts/'
     | '/admin/warehouses/'
+    | '/public/laptops/'
+    | '/public/posts/'
+    | '/users/carts/'
+    | '/users/orders/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
+    | '/public'
+    | '/users'
     | '/auth/login'
     | '/auth/sign-up'
     | '/error'
     | '/admin/categories/base'
     | '/admin/discounts/create'
     | '/admin/laptops/create'
+    | '/admin/orders/$orderId'
     | '/admin/posts/create'
     | '/admin/warehouses/storage'
     | '/auth/sso/callback'
+    | '/public/laptops/$slug'
+    | '/public/posts/$slug'
+    | '/users/orders/$orderId'
+    | '/users/payment/$orderId'
     | '/admin/categories'
+    | '/admin/dashboard'
     | '/admin/discounts'
     | '/admin/laptops'
+    | '/admin/orders'
     | '/admin/posts'
     | '/admin/warehouses'
+    | '/public/laptops'
+    | '/public/posts'
+    | '/users/carts'
+    | '/users/orders'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/public'
+    | '/users'
     | '/auth/login'
     | '/auth/sign-up'
     | '/error/'
     | '/admin/categories/base'
     | '/admin/discounts/create'
     | '/admin/laptops/create'
+    | '/admin/orders/$orderId'
     | '/admin/posts/create'
     | '/admin/warehouses/storage'
     | '/auth/sso/callback'
+    | '/public/laptops/$slug'
+    | '/public/posts/$slug'
+    | '/users/orders/$orderId'
+    | '/users/payment/$orderId'
     | '/admin/categories/'
+    | '/admin/dashboard/'
     | '/admin/discounts/'
     | '/admin/laptops/'
+    | '/admin/orders/'
     | '/admin/posts/'
     | '/admin/warehouses/'
+    | '/public/laptops/'
+    | '/public/posts/'
+    | '/users/carts/'
+    | '/users/orders/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  PublicRoute: typeof PublicRouteWithChildren
+  UsersRoute: typeof UsersRouteWithChildren
   AuthLoginRoute: typeof AuthLoginRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
   ErrorIndexRoute: typeof ErrorIndexRoute
@@ -230,6 +388,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/users': {
+      id: '/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof UsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/public': {
+      id: '/public'
+      path: '/public'
+      fullPath: '/public'
+      preLoaderRoute: typeof PublicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -265,6 +437,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/users/orders/': {
+      id: '/users/orders/'
+      path: '/orders'
+      fullPath: '/users/orders/'
+      preLoaderRoute: typeof UsersOrdersIndexRouteImport
+      parentRoute: typeof UsersRoute
+    }
+    '/users/carts/': {
+      id: '/users/carts/'
+      path: '/carts'
+      fullPath: '/users/carts/'
+      preLoaderRoute: typeof UsersCartsIndexRouteImport
+      parentRoute: typeof UsersRoute
+    }
+    '/public/posts/': {
+      id: '/public/posts/'
+      path: '/posts'
+      fullPath: '/public/posts/'
+      preLoaderRoute: typeof PublicPostsIndexRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/public/laptops/': {
+      id: '/public/laptops/'
+      path: '/laptops'
+      fullPath: '/public/laptops/'
+      preLoaderRoute: typeof PublicLaptopsIndexRouteImport
+      parentRoute: typeof PublicRoute
+    }
     '/admin/warehouses/': {
       id: '/admin/warehouses/'
       path: '/warehouses'
@@ -277,6 +477,13 @@ declare module '@tanstack/react-router' {
       path: '/posts'
       fullPath: '/admin/posts/'
       preLoaderRoute: typeof AdminPostsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/orders/': {
+      id: '/admin/orders/'
+      path: '/orders'
+      fullPath: '/admin/orders/'
+      preLoaderRoute: typeof AdminOrdersIndexRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/laptops/': {
@@ -293,12 +500,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDiscountsIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/dashboard/': {
+      id: '/admin/dashboard/'
+      path: '/dashboard'
+      fullPath: '/admin/dashboard/'
+      preLoaderRoute: typeof AdminDashboardIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/categories/': {
       id: '/admin/categories/'
       path: '/categories'
       fullPath: '/admin/categories/'
       preLoaderRoute: typeof AdminCategoriesIndexRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/users/payment/$orderId': {
+      id: '/users/payment/$orderId'
+      path: '/payment/$orderId'
+      fullPath: '/users/payment/$orderId'
+      preLoaderRoute: typeof UsersPaymentOrderIdRouteImport
+      parentRoute: typeof UsersRoute
+    }
+    '/users/orders/$orderId': {
+      id: '/users/orders/$orderId'
+      path: '/orders/$orderId'
+      fullPath: '/users/orders/$orderId'
+      preLoaderRoute: typeof UsersOrdersOrderIdRouteImport
+      parentRoute: typeof UsersRoute
+    }
+    '/public/posts/$slug': {
+      id: '/public/posts/$slug'
+      path: '/posts/$slug'
+      fullPath: '/public/posts/$slug'
+      preLoaderRoute: typeof PublicPostsSlugRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/public/laptops/$slug': {
+      id: '/public/laptops/$slug'
+      path: '/laptops/$slug'
+      fullPath: '/public/laptops/$slug'
+      preLoaderRoute: typeof PublicLaptopsSlugRouteImport
+      parentRoute: typeof PublicRoute
     }
     '/auth/sso/callback': {
       id: '/auth/sso/callback'
@@ -319,6 +561,13 @@ declare module '@tanstack/react-router' {
       path: '/posts/create'
       fullPath: '/admin/posts/create'
       preLoaderRoute: typeof AdminPostsCreateRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/orders/$orderId': {
+      id: '/admin/orders/$orderId'
+      path: '/orders/$orderId'
+      fullPath: '/admin/orders/$orderId'
+      preLoaderRoute: typeof AdminOrdersOrderIdRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/laptops/create': {
@@ -349,11 +598,14 @@ interface AdminRouteChildren {
   AdminCategoriesBaseRoute: typeof AdminCategoriesBaseRoute
   AdminDiscountsCreateRoute: typeof AdminDiscountsCreateRoute
   AdminLaptopsCreateRoute: typeof AdminLaptopsCreateRoute
+  AdminOrdersOrderIdRoute: typeof AdminOrdersOrderIdRoute
   AdminPostsCreateRoute: typeof AdminPostsCreateRoute
   AdminWarehousesStorageRoute: typeof AdminWarehousesStorageRoute
   AdminCategoriesIndexRoute: typeof AdminCategoriesIndexRoute
+  AdminDashboardIndexRoute: typeof AdminDashboardIndexRoute
   AdminDiscountsIndexRoute: typeof AdminDiscountsIndexRoute
   AdminLaptopsIndexRoute: typeof AdminLaptopsIndexRoute
+  AdminOrdersIndexRoute: typeof AdminOrdersIndexRoute
   AdminPostsIndexRoute: typeof AdminPostsIndexRoute
   AdminWarehousesIndexRoute: typeof AdminWarehousesIndexRoute
 }
@@ -362,20 +614,58 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCategoriesBaseRoute: AdminCategoriesBaseRoute,
   AdminDiscountsCreateRoute: AdminDiscountsCreateRoute,
   AdminLaptopsCreateRoute: AdminLaptopsCreateRoute,
+  AdminOrdersOrderIdRoute: AdminOrdersOrderIdRoute,
   AdminPostsCreateRoute: AdminPostsCreateRoute,
   AdminWarehousesStorageRoute: AdminWarehousesStorageRoute,
   AdminCategoriesIndexRoute: AdminCategoriesIndexRoute,
+  AdminDashboardIndexRoute: AdminDashboardIndexRoute,
   AdminDiscountsIndexRoute: AdminDiscountsIndexRoute,
   AdminLaptopsIndexRoute: AdminLaptopsIndexRoute,
+  AdminOrdersIndexRoute: AdminOrdersIndexRoute,
   AdminPostsIndexRoute: AdminPostsIndexRoute,
   AdminWarehousesIndexRoute: AdminWarehousesIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface PublicRouteChildren {
+  PublicLaptopsSlugRoute: typeof PublicLaptopsSlugRoute
+  PublicPostsSlugRoute: typeof PublicPostsSlugRoute
+  PublicLaptopsIndexRoute: typeof PublicLaptopsIndexRoute
+  PublicPostsIndexRoute: typeof PublicPostsIndexRoute
+}
+
+const PublicRouteChildren: PublicRouteChildren = {
+  PublicLaptopsSlugRoute: PublicLaptopsSlugRoute,
+  PublicPostsSlugRoute: PublicPostsSlugRoute,
+  PublicLaptopsIndexRoute: PublicLaptopsIndexRoute,
+  PublicPostsIndexRoute: PublicPostsIndexRoute,
+}
+
+const PublicRouteWithChildren =
+  PublicRoute._addFileChildren(PublicRouteChildren)
+
+interface UsersRouteChildren {
+  UsersOrdersOrderIdRoute: typeof UsersOrdersOrderIdRoute
+  UsersPaymentOrderIdRoute: typeof UsersPaymentOrderIdRoute
+  UsersCartsIndexRoute: typeof UsersCartsIndexRoute
+  UsersOrdersIndexRoute: typeof UsersOrdersIndexRoute
+}
+
+const UsersRouteChildren: UsersRouteChildren = {
+  UsersOrdersOrderIdRoute: UsersOrdersOrderIdRoute,
+  UsersPaymentOrderIdRoute: UsersPaymentOrderIdRoute,
+  UsersCartsIndexRoute: UsersCartsIndexRoute,
+  UsersOrdersIndexRoute: UsersOrdersIndexRoute,
+}
+
+const UsersRouteWithChildren = UsersRoute._addFileChildren(UsersRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  PublicRoute: PublicRouteWithChildren,
+  UsersRoute: UsersRouteWithChildren,
   AuthLoginRoute: AuthLoginRoute,
   AuthSignUpRoute: AuthSignUpRoute,
   ErrorIndexRoute: ErrorIndexRoute,

@@ -2,22 +2,26 @@ import type { SelectItemType } from "#/components/base/select/select-shared"
 import { useQuery } from "@tanstack/react-query"
 import { CategoryService } from "../service/category-service"
 import { useState } from "react"
+import { PublicCategoryService } from "../service/public-category-service"
 
 export type SearchCategoryProps = {
     param: string,
     baseCode: string,
     queryKey: string[],
+    isPublic?: boolean
 }
 
-export function useSearchCategory(props: SearchCategoryProps) : {
-    options : SelectItemType[] | undefined
+export function useSearchCategory(props: SearchCategoryProps): {
+    options: SelectItemType[] | undefined
     input: string | undefined
     setInput: (input: string) => void
 } {
-    const [categoryService] = useState(new CategoryService())
+    const [categoryService] = useState(() => props.isPublic ? new PublicCategoryService() : new CategoryService())
     const [input, setInput] = useState<string>()
     const { param, baseCode, queryKey } = props
-    
+
+
+
     const { data: options } = useQuery({
         queryKey: [...queryKey, param, input],
         queryFn: () => categoryService.getList({

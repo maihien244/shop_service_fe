@@ -29,9 +29,10 @@ export function CreateStoreModelModal({ isOpen, onClose }: CreateStoreModelModal
     const [status, setStatus] = useState<keyof typeof StoreModelStatus>('NEW')
     const [serialsText, setSerialsText] = useState('')
     const [serialNumbers, setSerialNumber] = useState<string[]>([])
+    const [optionId, setOptionId] = useState<number | undefined>(undefined)
 
     // Validation errors
-    const [errors, setErrors] = useState<Partial<Record<'warehouseId' | 'laptopId' | 'serialsText' | 'status', string>>>({})
+    const [errors, setErrors] = useState<Partial<Record<'warehouseId' | 'laptopId' | 'serialsText' | 'status' | 'optionId', string>>>({})
 
     // Fetch active warehouses
     const { data: warehouses } = useQuery({
@@ -45,6 +46,12 @@ export function CreateStoreModelModal({ isOpen, onClose }: CreateStoreModelModal
         queryKey: ['laptops-lookup'],
         queryFn: () => laptopService.getList({ size: 100, isActive: 1 }),
         enabled: isOpen
+    })
+
+    const { data: options } = useQuery({
+        queryKey: ['options-lookup', laptopId],
+        queryFn: () => laptopService.getOptionsOfLaptop(laptopId!),
+        enabled: isOpen && !!laptopId
     })
 
     const validateAll = () => {
@@ -68,7 +75,10 @@ export function CreateStoreModelModal({ isOpen, onClose }: CreateStoreModelModal
             newErrors.serialsText = 'Vui lòng nhập ít nhất một số Serial'
             isValid = false
         }
-
+        if (!optionId) {
+            newErrors.optionId = 'Vui lòng chọn cấu hình sản phẩm'
+            isValid = false
+        }
         setErrors(newErrors)
         return isValid
     }
@@ -80,6 +90,7 @@ export function CreateStoreModelModal({ isOpen, onClose }: CreateStoreModelModal
         setSerialsText('')
         setSerialNumber([])
         setErrors({})
+        setOptionId(undefined)
         onClose()
     }
 
@@ -101,7 +112,8 @@ export function CreateStoreModelModal({ isOpen, onClose }: CreateStoreModelModal
                 warehouseId: warehouseId!,
                 laptopId: laptopId!,
                 status,
-                serialNumbers
+                serialNumbers,
+                optionId: optionId!
             })
         }
     }
@@ -118,6 +130,12 @@ export function CreateStoreModelModal({ isOpen, onClose }: CreateStoreModelModal
                 .split('\n')
                 .map(s => s.trim())
                 .filter(s => s.length > 0)
+
+            if (serialNumbers.some(s => serials.includes(s))) {
+                const duplicateSerial = serialNumbers.find(s => serials.includes(s))
+                toastWarning(`Serial ${duplicateSerial} đã tồn tại`)
+                return
+            }
             setSerialNumber((prev) => [...new Set([...prev, ...serials])])
             setSerialsText('')
         }
@@ -128,14 +146,14 @@ export function CreateStoreModelModal({ isOpen, onClose }: CreateStoreModelModal
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
             {/* Backdrop */}
-            <div 
-                className="absolute inset-0 bg-bg-white-0/40 backdrop-blur-sm transition-opacity dark:bg-static-black/40" 
+            <div
+                className="absolute inset-0 bg-bg-white-0/40 backdrop-blur-sm transition-opacity dark:bg-static-black/40"
                 onClick={handleClose}
             />
 
             {/* Modal Content */}
             <div className="relative z-10 w-full max-w-2xl overflow-hidden rounded-24 border border-stroke-soft-200 bg-bg-white-0 shadow-modal transition-all dark:border-stroke-sub-300 dark:bg-bg-weak-50 flex flex-col animate-in zoom-in-95 duration-200">
-                
+
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-stroke-soft-200 px-6 py-4 dark:border-stroke-sub-300 bg-bg-weak-25 dark:bg-bg-surface-800">
                     <div className="flex items-center gap-3">
@@ -208,6 +226,32 @@ export function CreateStoreModelModal({ isOpen, onClose }: CreateStoreModelModal
                         {errors.laptopId && <p className="text-label-sm text-error-base">{errors.laptopId}</p>}
                     </div>
 
+                    {/* option Selection */}
+                    <div className="space-y-1.5">
+                        <label className="text-label-sm font-medium text-text-strong-950 dark:text-static-white">
+                            Option <span className="text-error-base">*</span>
+                        </label>
+                        <Select.Root
+                            value={optionId !== undefined ? optionId.toString() : ''}
+                            onValueChange={(val) => {
+                                setOptionId(Number(val))
+                                if (errors.laptopId) setErrors(prev => ({ ...prev, laptopId: undefined }))
+                            }}
+                        >
+                            <Select.Trigger className={`bg-white ${errors.laptopId ? 'ring-error-base focus:ring-error-base' : ''}`}>
+                                <Select.Value placeholder="Chọn Option laptop" />
+                            </Select.Trigger>
+                            <Select.Content>
+                                {options?.results.map((l) => (
+                                    <Select.Item className='w-full' key={l.id} value={l.id.toString()}>
+                                        {l.name}
+                                    </Select.Item>
+                                ))}
+                            </Select.Content>
+                        </Select.Root>
+                        {errors.optionId && <p className="text-label-sm text-error-base">{errors.optionId}</p>}
+                    </div>
+
                     {/* Status Selection */}
                     <div className="space-y-1.5">
                         <label className="text-label-sm font-medium text-text-strong-950 dark:text-static-white">
@@ -253,11 +297,10 @@ export function CreateStoreModelModal({ isOpen, onClose }: CreateStoreModelModal
                             </div>
                         ) : ''}
                         <textarea
-                            className={`w-full min-h-[40px] p-4 rounded-14 border bg-white outline-none focus:ring-2 font-mono text-label-sm transition-all resize-y ${
-                                errors.serialsText 
-                                ? 'border-error-base focus:ring-error-base/20' 
+                            className={`w-full min-h-[40px] p-4 rounded-14 border bg-white outline-none focus:ring-2 font-mono text-label-sm transition-all resize-y ${errors.serialsText
+                                ? 'border-error-base focus:ring-error-base/20'
                                 : 'border-stroke-soft-200 focus:ring-primary-base/20 focus:border-primary-base dark:border-stroke-sub-300 dark:bg-bg-weak-50'
-                            }`}
+                                }`}
                             placeholder="Ví dụ:&#10;SN-LAPTOP-0001&#10;SN-LAPTOP-0002&#10;SN-LAPTOP-0003"
                             value={serialsText}
                             onChange={(e) => setSerialsText(e.target.value)}
@@ -272,10 +315,10 @@ export function CreateStoreModelModal({ isOpen, onClose }: CreateStoreModelModal
                     <Button.Root variant="neutral" mode="stroke" type="button" onClick={handleClose}>
                         Hủy
                     </Button.Root>
-                    <Button.Root 
-                        variant="primary" 
-                        mode="filled" 
-                        type="button" 
+                    <Button.Root
+                        variant="primary"
+                        mode="filled"
+                        type="button"
                         onClick={handleSubmit}
                         disabled={createMutation.isPending}
                     >

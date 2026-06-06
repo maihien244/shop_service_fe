@@ -3,6 +3,7 @@ import { type ColumnDef, type SortingState } from '@tanstack/react-table'
 import { DiscountType, type DiscountResponse } from '../dto'
 import { Eye, Pencil, Trash2 } from 'lucide-react'
 import * as Button from '#/components/ui/button'
+import { renderLocalTime } from '#/utils/time-format'
 
 export const getSortQuery = (sorting: SortingState): string => {
     if (!sorting || sorting.length === 0) return 'expired_at,desc'
@@ -77,7 +78,7 @@ export const getDiscountColumnDef = (props: DiscountColumnDefProps): ColumnDef<D
         accessorKey: 'isActive',
         header: 'Trạng thái',
         cell: (info) => {
-            const isActive = info.getValue() === "true" || info.getValue() === true
+            const isActive = info.getValue()
             return (
                 <span
                     className={clsx(
@@ -92,11 +93,20 @@ export const getDiscountColumnDef = (props: DiscountColumnDefProps): ColumnDef<D
         enableSorting: true,
     },
     {
-        accessorKey: 'expiredAt',
+        accessorKey: 'expiryFrom',
+        header: 'Ngày bắt đầu',
+        cell: (info) => {
+            const date = info.getValue() as string
+            return date ? renderLocalTime(date) : 'N/A'
+        },
+        enableSorting: true,
+    },
+    {
+        accessorKey: 'expiryTo',
         header: 'Ngày hết hạn',
         cell: (info) => {
             const date = info.getValue() as string
-            return date ? new Date(date).toLocaleDateString() : 'N/A'
+            return date ? renderLocalTime(date) : 'N/A'
         },
         enableSorting: true,
     },

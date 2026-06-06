@@ -7,8 +7,8 @@ export class GetListDiscountParams extends BaseParams {
     'code:eq'?: string
     'type:eq'?: string
     'isActive'?: string
-    'expiredAt:ge'?: string
-    'expiredAt:le'?: string
+    'expiryFrom:ge'?: string
+    'expiryFrom:le'?: string
 }
 
 export class DiscountService {

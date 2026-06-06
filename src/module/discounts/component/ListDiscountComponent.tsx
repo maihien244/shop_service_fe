@@ -80,8 +80,8 @@ export function ListDiscountComponent() {
             'code:eq': debouncedFilter.codeEq || undefined,
             'type:eq': debouncedFilter.typeEq || undefined,
             'isActive': debouncedFilter.isActive || undefined,
-            'expiredAt:ge': debouncedFilter.expiredAtGe || undefined,
-            'expiredAt:le': debouncedFilter.expiredAtLe || undefined,
+            'expiryFrom:ge': debouncedFilter.expiryFromGe || undefined,
+            'expiryFrom:le': debouncedFilter.expiryFromLe || undefined,
         }),
     })
 

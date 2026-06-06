@@ -22,6 +22,7 @@ export type CreateStoreModelRequest = {
     serialNumbers: string[]
     laptopId: number
     status: keyof typeof StoreModelStatus
+    optionId: number
 }
 
 export type StoreModelResponse = {

@@ -10,8 +10,8 @@ export type DiscountFilterParams = {
     codeEq?: string;
     typeEq?: string;
     isActive?: string;
-    expiredAtGe?: string;
-    expiredAtLe?: string;
+    expiryFromGe?: string;
+    expiryFromLe?: string;
 };
 
 type ListDiscountFilterProps = {
@@ -126,7 +126,7 @@ export const ListDiscountFilter = ({ filter, onChangeFilter, onClearFilter }: Li
                         {/* Date Range Filter */}
                         <div className="w-full">
                             <label className="text-label-xs font-semibold text-text-sub-600 dark:text-text-soft-400 mb-2.5 block">
-                                Ngày hết hạn
+                                Ngày bắt đầu áp dụng
                             </label>
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
@@ -136,10 +136,10 @@ export const ListDiscountFilter = ({ filter, onChangeFilter, onClearFilter }: Li
                                             <Input.Input
                                                 type="date"
                                                 className="text-label-sm"
-                                                value={filter.expiredAtGe ? filter.expiredAtGe.split('T')[0] : ''}
+                                                value={filter.expiryFromGe ? filter.expiryFromGe.split('T')[0] : ''}
                                                 onChange={(e) => {
                                                     const val = e.target.value;
-                                                    onChangeFilter(prev => ({ ...prev, expiredAtGe: val ? `${val}T00:00:00` : undefined }));
+                                                    onChangeFilter(prev => ({ ...prev, expiryFromGe: val ? `${val}T00:00:00` : undefined }));
                                                 }}
                                             />
                                         </Input.Wrapper>
@@ -152,10 +152,10 @@ export const ListDiscountFilter = ({ filter, onChangeFilter, onClearFilter }: Li
                                             <Input.Input
                                                 type="date"
                                                 className="text-label-sm"
-                                                value={filter.expiredAtLe ? filter.expiredAtLe.split('T')[0] : ''}
+                                                value={filter.expiryFromLe ? filter.expiryFromLe.split('T')[0] : ''}
                                                 onChange={(e) => {
                                                     const val = e.target.value;
-                                                    onChangeFilter(prev => ({ ...prev, expiredAtLe: val ? `${val}T23:59:59` : undefined }));
+                                                    onChangeFilter(prev => ({ ...prev, expiryFromLe: val ? `${val}T23:59:59` : undefined }));
                                                 }}
                                             />
                                         </Input.Wrapper>

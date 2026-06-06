@@ -5,6 +5,7 @@ export type WarehouseDto = {
     address: string,
     createAt: string,
     updateAt: string,
+    total?: number
 }
 
 export type CreateWarehouseRequest = {

@@ -5,7 +5,15 @@ import { useMutation } from "@tanstack/react-query";
 import { useRef } from "react";
 import { FilePond } from "react-filepond";
 
-export function FileUploadComponent({setAttachState} : {setAttachState: (attach: AttachDto) => void}) {
+type FileUploadComponentProps = {
+    setAttachState: (attach: AttachDto) => void
+    maxFiles?: number
+    title?: string
+    size?: 'sm'
+    icon?: React.ReactNode
+}
+
+export function FileUploadComponent({ setAttachState, maxFiles = 5, title, size, icon }: FileUploadComponentProps) {
     const filePondRef = useRef<any>(null)
     const { toastSuccess, toastError } = useToast()
     const { handleUploadAttach } = useUploadAttach()
@@ -22,16 +30,21 @@ export function FileUploadComponent({setAttachState} : {setAttachState: (attach:
     })
 
     return (
-        <FilePond 
+        <FilePond
             ref={filePondRef}
             allowMultiple={true}
-            maxFiles={5}
+            maxFiles={maxFiles}
             allowImageResize={true}
             imageResizeTargetWidth={800}
             imageResizeMode="contain"
             imageResizeUpscale={false}
             allowImageTransform={true}
-            labelIdle='<span class="text-xs">Kéo thả ảnh hoặc <span class="filepond--label-action">Chọn tệp</span> (Tối đa 5 ảnh)</span>'
+            labelIdle={
+                icon ? 
+                `<span>${icon}</span>`
+                : title ? 
+                `<span class="text-xs">${title}</span>` 
+                : `<span class="text-xs">Kéo thả ảnh hoặc <span class="filepond--label-action">Chọn tệp</span> (Tối đa ${maxFiles} ảnh)</span>`}
             server={{
                 process: async (fileName, file, metadata, load, error, progress, abort) => {
                     try {

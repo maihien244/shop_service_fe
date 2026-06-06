@@ -1,20 +1,21 @@
 import { Outlet, Link, useLocation } from '@tanstack/react-router'
-import { 
-    LayoutDashboard, 
-    FileText, 
-    Image as ImageIcon, 
-    Settings, 
+import {
+    LayoutDashboard,
+    FileText,
+    Image as ImageIcon,
+    Settings,
     Users,
     LogOut,
     ChevronRight,
     DotIcon,
     Laptop,
     Warehouse,
-    TicketPercent
+    TicketPercent,
+    CircleDollarSign
 } from 'lucide-react'
 import { clsx } from 'clsx'
-import { SidebarNavigation } from '#/components/ui/slider-navigation'
 import type { NavItemDividerType, NavItemType } from '#/components/application/app-navigation/config'
+import { useAuth } from '#/module/auth/context/auth-context'
 
 type NavItem = {
     label: string
@@ -25,45 +26,53 @@ type NavItem = {
 
 const navItems: NavItem[] = [
     { label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
-    { 
-        label: 'Bài viết', 
-        icon: FileText, 
+    {
+        label: 'Đơn hàng',
+        icon: CircleDollarSign,
+        href: '/admin/orders',
+        children: [
+            { label: 'Danh sách đơn hàng', href: '/admin/orders' }
+        ]
+    },
+    {
+        label: 'Bài viết',
+        icon: FileText,
         href: '/admin/posts',
         children: [
             { label: 'Danh sách bài viết', href: '/admin/posts' },
             { label: 'Tạo bài viết', href: '/admin/posts/create' }
         ]
     },
-    { 
-        label: 'Sản phẩm', 
-        icon: Laptop, 
+    {
+        label: 'Sản phẩm',
+        icon: Laptop,
         href: '/admin/laptops',
         children: [
             { label: 'Danh sách sản phẩm', href: '/admin/laptops' },
             { label: 'Tạo sản phẩm', href: '/admin/laptops/create' }
         ]
     },
-    { 
-        label: 'Danh Mục', 
-        icon: ImageIcon, 
+    {
+        label: 'Danh Mục',
+        icon: ImageIcon,
         href: '/admin/categories',
         children: [
-            { label: 'Danh mục chung', href: '/admin/categories/base'},
+            { label: 'Danh mục chung', href: '/admin/categories/base' },
             { label: 'Danh sách danh mục con', href: '/admin/categories' },
         ]
     },
-    { 
-        label: 'Kho', 
-        icon: Warehouse, 
+    {
+        label: 'Kho',
+        icon: Warehouse,
         href: '/admin/warehouses',
         children: [
             { label: 'Danh sách kho', href: '/admin/warehouses' },
             { label: 'Quản lý kho', href: '/admin/warehouses/storage' },
         ]
     },
-    { 
-        label: 'Mã giảm giá', 
-        icon: TicketPercent, 
+    {
+        label: 'Mã giảm giá',
+        icon: TicketPercent,
         href: '/admin/discounts',
         children: [
             { label: 'Danh sách mã giảm giá', href: '/admin/discounts' },
@@ -77,9 +86,9 @@ const navItems: NavItem[] = [
 const navItemsWithDividers: (NavItemType | NavItemDividerType)[] = [
     { label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
     { divider: true },
-    { 
-        label: 'Bài viết', 
-        icon: FileText, 
+    {
+        label: 'Bài viết',
+        icon: FileText,
         href: '/admin/posts',
         items: [
             { label: 'Danh sách bài viết', href: '/admin/posts' },
@@ -87,9 +96,9 @@ const navItemsWithDividers: (NavItemType | NavItemDividerType)[] = [
         ]
     },
     { divider: true },
-    { 
-        label: 'Sản phẩm', 
-        icon: Laptop, 
+    {
+        label: 'Sản phẩm',
+        icon: Laptop,
         href: '/admin/laptops',
         items: [
             { label: 'Danh sách sản phẩm', href: '/admin/laptops' },
@@ -97,19 +106,19 @@ const navItemsWithDividers: (NavItemType | NavItemDividerType)[] = [
         ]
     },
     { divider: true },
-    { 
-        label: 'Danh Mục', 
-        icon: ImageIcon, 
+    {
+        label: 'Danh Mục',
+        icon: ImageIcon,
         href: '/admin/categories',
         items: [
-            { label: 'Danh mục chung', href: '/admin/categories/base'},
+            { label: 'Danh mục chung', href: '/admin/categories/base' },
             { label: 'Danh sách danh mục con', href: '/admin/categories' },
         ]
     },
     { divider: true },
-    { 
-        label: 'Kho', 
-        icon: Warehouse, 
+    {
+        label: 'Kho',
+        icon: Warehouse,
         href: '/admin/warehouses',
         items: [
             { label: 'Danh sách kho', href: '/admin/warehouses' },
@@ -117,9 +126,9 @@ const navItemsWithDividers: (NavItemType | NavItemDividerType)[] = [
         ]
     },
     { divider: true },
-    { 
-        label: 'Mã giảm giá', 
-        icon: TicketPercent, 
+    {
+        label: 'Mã giảm giá',
+        icon: TicketPercent,
         href: '/admin/discounts',
         items: [
             { label: 'Danh sách mã giảm giá', href: '/admin/discounts' },
@@ -133,6 +142,7 @@ const navItemsWithDividers: (NavItemType | NavItemDividerType)[] = [
 
 export function AdminLayout() {
     const location = useLocation()
+    const { logout } = useAuth()
 
     return (
         <div className="flex h-screen w-full bg-bg-weak-50 p-4 gap-4 transition-colors duration-300 dark:bg-bg-white-0 overflow-y-hidden">
@@ -151,7 +161,7 @@ export function AdminLayout() {
                 </div>
 
                 {/* Navigation */}
-                <nav className="flex-1 space-y-1 overflow-y-auto px-4 py-4">
+                <nav className="flex-1 space-y-1 overflow-y-auto px-4 py-4 scrollbar-hide">
                     <div className="mb-6 px-4 text-label-2xs font-bold uppercase tracking-widest text-text-soft-400">
                         Danh mục chính
                     </div>
@@ -164,13 +174,13 @@ export function AdminLayout() {
                                     className={clsx(
                                         "group flex items-center justify-between rounded-2xl px-3 py-2.5 transition-all duration-300",
                                         isActive
-                                            ? "bg-bg-weak-50 text-text-strong-950 dark:bg-bg-surface-800 dark:text-static-white" 
+                                            ? "bg-bg-weak-50 text-text-strong-950 dark:bg-bg-surface-800 dark:text-static-white"
                                             : "text-text-sub-600 hover:bg-bg-weak-50/80 hover:text-text-strong-950 dark:text-text-soft-400 dark:hover:bg-bg-surface-800/80 dark:hover:text-static-white"
                                     )}
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className={clsx(
-                                            "flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-300", 
+                                            "flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-300",
                                             isActive ? "bg-primary-base text-static-white shadow-fancy-buttons-primary" : "bg-transparent group-hover:bg-bg-white-0 dark:group-hover:bg-bg-weak-50"
                                         )}>
                                             <item.icon size={18} className={clsx("transition-transform duration-300", isActive && "scale-110")} />
@@ -196,8 +206,8 @@ export function AdminLayout() {
                                                     to={child.href}
                                                     className={clsx(
                                                         "rounded-xl px-3 py-3 text-paragraph-sm font-medium transition-all duration-300",
-                                                        isChildActive 
-                                                            ? "bg-primary-lighter text-primary-base dark:bg-primary-alpha-12" 
+                                                        isChildActive
+                                                            ? "bg-primary-lighter text-primary-base dark:bg-primary-alpha-12"
                                                             : "text-text-sub-600 hover:text-text-strong-950 dark:text-text-soft-400 dark:hover:text-static-white"
                                                     )}
                                                 >
@@ -218,7 +228,9 @@ export function AdminLayout() {
                 {/* Bottom Logout Area */}
                 <div className="p-4">
                     <div className="mb-4 h-px w-full bg-gradient-to-r from-transparent via-stroke-soft-200 to-transparent dark:via-stroke-sub-300" />
-                    <button className="group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-text-sub-600 transition-all duration-300 hover:bg-error-lighter hover:text-error-base dark:text-text-soft-400 dark:hover:bg-error-dark dark:hover:text-static-white">
+                    <button
+                        onClick={logout}
+                        className="group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-text-sub-600 transition-all duration-300 hover:bg-error-lighter hover:text-error-base dark:text-text-soft-400 dark:hover:bg-error-dark dark:hover:text-static-white">
                         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-transparent transition-colors duration-300 group-hover:bg-bg-white-0 dark:group-hover:bg-bg-weak-50">
                             <LogOut size={18} />
                         </div>

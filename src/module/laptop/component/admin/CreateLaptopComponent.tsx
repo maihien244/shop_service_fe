@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 import { EditorContent } from '@tiptap/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useSearch } from '@tanstack/react-router'
-import { Save, X } from 'lucide-react'
-import { LaptopService } from '../service/laptop-service'
-import { type CreateLaptopRequest } from '../dto'
+import { Save, X, Plus, Trash2, ImagePlus, Loader2 } from 'lucide-react'
+import { LaptopService } from '../../service/laptop-service'
+import { type CreateLaptopRequest, type CreateOptionLaptopRequest } from '../../dto'
+import { useUploadAttach } from '#/module/attachs/hooks/use-upload-attach'
 import { MenuBar } from '#/lib/tiptap/menu-bar'
 import { getFullHTML, useTiptapEditor } from '#/lib/tiptap/hooks/use-tiptap-editor'
 import type { AttachDto } from '#/module/attachs/dto'
@@ -17,6 +18,8 @@ import type { AbstractForm, ValidatorFunction } from '#/utils/validate-form'
 import { SwiperCardEffect } from '#/components/ui/swiper-card-effect'
 import { useSlug } from '#/hooks/use-slug'
 import { useSearchCategory } from '#/module/category/hooks/use-search-category'
+import { useFileUrl } from '#/module/attachs/hooks/use-file'
+import * as Button from '#/components/ui/button'
 
 const laptopService = new LaptopService()
 
@@ -33,6 +36,12 @@ const formRules: AbstractForm<CreateLaptopRequest> = {
     description: (val) => val ? null : 'Vui lòng nhập mô tả',
 }
 
+const optionRules: AbstractForm<CreateOptionLaptopRequest> = {
+    name: (val) => val ? null : 'Tên cấu hình không được để trống',
+    price: (val) => Number(val) > 0 ? null : 'Giá cấu hình phải lớn hơn 0',
+    attachId: (val) => val ? null : 'Vui lòng chọn ảnh cho cấu hình',
+}
+
 export function CreateLaptopComponent() {
     const navigate = useNavigate()
     const search: any = useSearch({ strict: false })
@@ -40,6 +49,8 @@ export function CreateLaptopComponent() {
 
     const { toastSuccess, toastError } = useToast()
     const queryClient = useQueryClient()
+
+    const [options, setOptions] = useState<(CreateOptionLaptopRequest & { _id: string, attach?: AttachDto, isUploading?: boolean, errors?: Partial<Record<keyof CreateOptionLaptopRequest, string>> })[]>([])
 
     const [formState, setFormState] = useState<CreateLaptopRequest>({
         name: '',
@@ -56,12 +67,14 @@ export function CreateLaptopComponent() {
         isActive: 1,
         attachIds: [],
         slug: '',
+        options: []
     })
-    
-    const [,setAttachs] = useState<AttachDto[]>([])
+
+    const [, setAttachs] = useState<AttachDto[]>([])
     const [thumbnails, setThumbnails] = useState<AttachDto[]>([])
     const [errors, setErrors] = useState<Partial<Record<keyof CreateLaptopRequest, string>>>({})
     const { generateSlug } = useSlug('vi')
+    const { getFileUrl } = useFileUrl()
 
     const editor = useTiptapEditor({
         className: 'min-h-[400px] px-6 py-4 text-text-strong-950 dark:text-static-white leading-relaxed',
@@ -86,6 +99,18 @@ export function CreateLaptopComponent() {
                     isActive: data.isActive,
                     attachIds: data.attaches?.map(a => a.id) || [],
                     slug: data.slug,
+                    options: []
+                })
+                setOptions(() => {
+                    return data.options.map(opt => ({
+                        id: opt.id,
+                        name: opt.name,
+                        price: opt.price,
+                        attachId: opt.attach?.id,
+                        attach: opt.attach,
+                        isUploading: false,
+                        _id: opt.id.toString()
+                    }))
                 })
                 editor.commands.setContent(data.description)
                 if (data.attaches && data.attaches.length > 0) {
@@ -101,7 +126,7 @@ export function CreateLaptopComponent() {
         queryKey: ['categories', 'H_SERVICE_BRAND'],
         param: 'name:ct',
     })
-    
+
     const { options: screenOptions, setInput: setScreenInput } = useSearchCategory({
         baseCode: 'H_SERVICE_SCREEN',
         queryKey: ['categories', 'H_SERVICE_SCREEN'],
@@ -133,12 +158,12 @@ export function CreateLaptopComponent() {
     })
 
     const { options: gpuOptions, setInput: setGpuInput } = useSearchCategory({
-        baseCode: 'H_SERVCIE_GPU',
-        queryKey: ['categories', 'H_SERVCIE_GPU'],
+        baseCode: 'H_SERVICE_GPU',
+        queryKey: ['categories', 'H_SERVICE_GPU'],
         param: 'name:ct',
     })
 
-    const [ nameParent, setNameParent ] = useState('')
+    const [nameParent, setNameParent] = useState('')
     const { data: parentOptions } = useQuery({
         queryKey: ['laptops'],
         queryFn: () => laptopService.getList({
@@ -153,12 +178,12 @@ export function CreateLaptopComponent() {
     const validateAll = () => {
         let isValid = true
         const newErrors: Partial<Record<keyof CreateLaptopRequest, string>> = {}
-        
+
         for (const key in formRules) {
             const field = key as keyof CreateLaptopRequest
             const rule = formRules[field] as ValidatorFunction<any, CreateLaptopRequest> | undefined
             const valueToValidate = field === 'description' ? getFullHTML(editor) : formState[field]
-            
+
             if (rule) {
                 const error = rule(valueToValidate, formState)
                 if (typeof error === 'string') {
@@ -168,6 +193,29 @@ export function CreateLaptopComponent() {
             }
         }
         setErrors(newErrors)
+
+        const newOptions = options.map(opt => {
+            const optErrors: Partial<Record<keyof CreateOptionLaptopRequest, string>> = {}
+            let isOptValid = true
+
+            for (const key in optionRules) {
+                const field = key as keyof CreateOptionLaptopRequest
+                const rule = optionRules[field] as ValidatorFunction<any, CreateOptionLaptopRequest> | undefined
+                if (rule) {
+                    const error = rule(opt[field], opt)
+                    if (typeof error === 'string') {
+                        optErrors[field] = error
+                        isOptValid = false
+                        isValid = false
+                    }
+                }
+            }
+
+            return { ...opt, errors: optErrors }
+        })
+
+        setOptions(newOptions)
+
         return isValid
     }
 
@@ -186,6 +234,44 @@ export function CreateLaptopComponent() {
     const handleSelectChange = (field: keyof CreateLaptopRequest, value: any) => {
         setFormState(prev => ({ ...prev, [field]: Number(value) }))
         if (errors[field]) setErrors(prev => ({ ...prev, [field]: undefined }))
+    }
+
+    const handleAddOption = () => {
+        setOptions(prev => [...prev, { _id: Math.random().toString(), name: '', price: '0' }])
+    }
+
+    const handleRemoveOption = (id: string) => {
+        setOptions(prev => prev.filter(opt => opt._id !== id))
+    }
+
+    const handleOptionChange = (id: string, field: keyof CreateOptionLaptopRequest, value: string) => {
+        setOptions(prev => prev.map(opt => {
+            if (opt._id === id) {
+                const newOpt = { ...opt, [field]: value }
+                if (newOpt.errors && newOpt.errors[field]) {
+                    newOpt.errors = { ...newOpt.errors, [field]: undefined }
+                }
+                return newOpt
+            }
+            return opt
+        }))
+    }
+
+    const handleUploadOptionAttach = (id: string, attach: AttachDto) => {
+        setOptions(prev => prev.map(opt => {
+            if (opt._id === id) {
+                const newOpt = { ...opt, attachId: attach.id, attach }
+                if (newOpt.errors && newOpt.errors.attachId) {
+                    newOpt.errors = { ...newOpt.errors, attachId: undefined }
+                }
+                return newOpt
+            }
+            return opt
+        }))
+    }
+
+    const handleRemoveOptionAttach = (id: string) => {
+        setOptions(prev => prev.map(opt => opt._id === id ? { ...opt, attachId: undefined, attach: undefined } : opt))
     }
 
     const createMutation = useMutation({
@@ -218,12 +304,18 @@ export function CreateLaptopComponent() {
             return
         }
 
+        const optionsData = options.length > 0 ? options.map(({ _id, attach, isUploading, errors, ...rest }) => ({
+            ...rest,
+            price: rest.price || '0'
+        })) : undefined;
+
         const dataToSubmit: CreateLaptopRequest = {
             ...formState,
             attachIds: [
                 ...thumbnails.map(thumb => thumb.id)
             ],
             description: getFullHTML(editor),
+            ...(optionsData ? { options: optionsData } : {})
         }
 
         if (laptopId) {
@@ -255,7 +347,7 @@ export function CreateLaptopComponent() {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-3">
                         <button
                             onClick={handleSubmit}
@@ -275,7 +367,7 @@ export function CreateLaptopComponent() {
                 </div>
             </header>
 
-            <main className="w-full py-4 overflow-y-auto max-h-[calc(90vh-4rem)]">
+            <main className="w-full py-4 overflow-y-auto max-h-[calc(90vh-4rem)] scrollbar-hide">
                 <div className="grid gap-8 lg:grid-cols-[1fr_360px] items-start px-4">
                     {/* Primary Area */}
                     <div className="space-y-8">
@@ -305,7 +397,7 @@ export function CreateLaptopComponent() {
                         <div className="overflow-hidden rounded-20 bg-bg-white-0 shadow-complex-12 dark:bg-bg-weak-50">
                             <MenuBar editor={editor} setAttachRequest={setAttachs} />
                             <div className="bg-bg-white-0 transition-colors dark:bg-bg-weak-50 ">
-                                <EditorContent editor={editor} className='max-h-[60vh] overflow-auto'/>
+                                <EditorContent editor={editor} className='max-h-[60vh] overflow-auto' />
                             </div>
                             {errors.description && <div className="px-6 pb-2"><p className="text-label-sm text-error-base">{errors.description}</p></div>}
                         </div>
@@ -318,7 +410,7 @@ export function CreateLaptopComponent() {
                                     Thông số kỹ thuật
                                 </h3>
                             </div>
-                            
+
                             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                                 {/* Price */}
                                 <div className="space-y-1.5">
@@ -473,6 +565,116 @@ export function CreateLaptopComponent() {
                                     </Select.ComboBox>
                                     {errors.screenSizeId && <p className="text-label-sm text-error-base">{errors.screenSizeId}</p>}
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Options Section */}
+                        <div className="overflow-hidden rounded-20 bg-bg-white-0 shadow-complex dark:bg-bg-weak-50">
+                            <div className="flex items-center justify-between border-b border-stroke-soft-200 bg-bg-weak-25 px-6 py-4 dark:border-stroke-sub-300 dark:bg-bg-surface-800">
+                                <h3 className="flex items-center gap-2 text-label-xs font-bold uppercase tracking-widest text-text-strong-950 dark:text-static-white">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-primary-base" />
+                                    Tùy chọn sản phẩm
+                                </h3>
+                                <Button.Root
+                                    variant='neutral'
+                                    mode='filled'
+                                    onClick={handleAddOption}>
+                                    <Button.Icon as={Plus} />
+                                    Thêm tùy chọn
+                                </Button.Root>
+                            </div>
+
+                            <div className="p-6 space-y-4">
+                                {options.length === 0 ? (
+                                    <div className="text-center py-6 text-text-soft-400 text-label-sm">
+                                        Chưa có tùy chọn nào. Bấm "Thêm tùy chọn" để tạo mới.
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {options.map((opt) => (
+                                            <>
+                                                <div key={opt._id} className="flex items-start gap-4 p-4 rounded-12 border border-stroke-soft-200 dark:border-stroke-sub-300">
+                                                    {/* Image Upload */}
+                                                    <div className="shrink-0 space-y-1.5">
+                                                        <label className={`relative flex h-20 w-20 cursor-pointer items-center justify-center rounded-8 border border-dashed border-stroke-soft-200 bg-bg-weak-50 transition-colors hover:bg-bg-weak-100 dark:border-stroke-sub-300 dark:bg-bg-surface-800 dark:hover:bg-bg-surface-900 overflow-hidden group ${opt.errors?.attachId ? 'border-error-base ring-1 ring-error-base' : ''}`}>
+                                                            {opt.isUploading ? (
+                                                                <Loader2 className="h-6 w-6 animate-spin text-text-soft-400" />
+                                                            ) : opt.attach ? (
+                                                                <>
+                                                                    <img src={getFileUrl(opt.attach.attachMetadata?.keyName || '')} alt="Option" className="h-full w-full object-cover" />
+                                                                    <div className="absolute inset-0 bg-static-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                        <Button.Root onClick={(e) => {
+                                                                            e.preventDefault();
+                                                                            handleRemoveOptionAttach(opt._id);
+                                                                        }}
+                                                                            variant='error'
+                                                                            className='rounded-12'
+                                                                            mode='ghost'
+                                                                        >
+                                                                            <Button.Icon as={Trash2} />
+                                                                        </Button.Root>
+                                                                    </div>
+                                                                </>
+                                                            ) : (
+                                                                <div className="flex flex-col items-center gap-1 text-text-soft-400">
+                                                                    <FileUploadComponent
+                                                                        icon={<ImagePlus size={20} />}
+                                                                        maxFiles={1}
+                                                                        setAttachState={(attach) => handleUploadOptionAttach(opt._id, attach)} />
+                                                                </div>
+                                                            )}
+                                                        </label>
+                                                        {opt.errors?.attachId && <p className="text-label-sm text-error-base max-w-[80px] text-center text-wrap">{opt.errors.attachId}</p>}
+                                                    </div>
+
+                                                    {/* Inputs */}
+                                                    <div className="grid grid-cols-2 gap-4 flex-grow">
+                                                        <div className="space-y-1.5">
+                                                            <label className="text-label-xs font-medium text-text-strong-950 dark:text-static-white">
+                                                                Tên tùy chọn <span className="text-error-base">*</span>
+                                                            </label>
+                                                            <Input.Root size='medium' className={opt.errors?.name ? 'ring-error-base' : ''}>
+                                                                <Input.Wrapper>
+                                                                    <Input.Input
+                                                                        value={opt.name}
+                                                                        onChange={(e) => handleOptionChange(opt._id, 'name', e.target.value)}
+                                                                        placeholder='VD: Màu xám / Bàn phím US...'
+                                                                    />
+                                                                </Input.Wrapper>
+                                                            </Input.Root>
+                                                            {opt.errors?.name && <p className="text-label-sm text-error-base">{opt.errors.name}</p>}
+                                                        </div>
+                                                        <div className="space-y-1.5">
+                                                            <label className="text-label-xs font-medium text-text-strong-950 dark:text-static-white">
+                                                                Giá cộng thêm (VNĐ) <span className="text-error-base">*</span>
+                                                            </label>
+                                                            <Input.Root size='medium' className={opt.errors?.price ? 'ring-error-base' : ''}>
+                                                                <Input.Wrapper>
+                                                                    <Input.Input
+                                                                        type="number"
+                                                                        value={opt.price}
+                                                                        onChange={(e) => handleOptionChange(opt._id, 'price', e.target.value)}
+                                                                        placeholder='0'
+                                                                    />
+                                                                </Input.Wrapper>
+                                                            </Input.Root>
+                                                            {opt.errors?.price && <p className="text-label-sm text-error-base">{opt.errors.price}</p>}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Remove Button */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveOption(opt._id)}
+                                                        className="mt-6 shrink-0 rounded-8 p-2 text-text-soft-400 hover:bg-error-base/10 hover:text-error-base transition-colors"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            </>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

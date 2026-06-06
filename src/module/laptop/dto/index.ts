@@ -15,6 +15,7 @@ export type CreateLaptopRequest = {
     cpuId: number,
     screenId: number,
     slug: string,
+    options: CreateOptionLaptopRequest[]
 }
 
 export type LaptopResponse = {
@@ -23,6 +24,7 @@ export type LaptopResponse = {
     description: string,
     isActive: number,
     originalPrice: number,
+    price: number,
     attaches?: AttachDto[],
     parentId?: number,
     brandId: number,
@@ -33,4 +35,23 @@ export type LaptopResponse = {
     cpuId: number,
     screenId: number,
     slug: string,
+    options: OptionLaptopResponse[]
+    discountType?: string
+    discountValue?: number
+    relations?: LaptopResponse[]
+}
+
+export type CreateOptionLaptopRequest = {
+    id?: number
+    name: string
+    price: string
+    attachId?: number
+}
+
+export type OptionLaptopResponse = {
+    id: number,
+    name: string,
+    price: string,
+    attach: AttachDto,
+    laptopId: number,
 }

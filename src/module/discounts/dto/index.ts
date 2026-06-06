@@ -17,13 +17,12 @@ export type CreateDiscountRequest = {
     code: string
     userIds?: number[]
     quantity: number
-    moduleId?: number
+    moduleIds?: number[]
     type: keyof typeof DiscountType
     expiryFrom?: string
     expiryTo?: string
     isActive: number
     value: number
-    laptopIds?: number[]
 }
 
 export type DiscountResponse = {
