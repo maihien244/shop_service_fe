@@ -16,9 +16,10 @@ import { PaymentType } from '#/module/cart/dto'
 import { PaymentStatus, ProcessStatus } from '../../dto'
 import { RiPushpinFill } from '@remixicon/react'
 import * as Tag from '@/components/ui/tag'
+import { AdminOrderService } from '../../service/admin-order-service'
 
 export function ViewOrderDetailComponent({ orderId }: { orderId: number }) {
-    const orderService = useMemo(() => new OrderService(), [])
+    const orderService = useMemo(() => new AdminOrderService(), [])
     const { getFileUrl } = useFileUrl()
 
     const { data: order, isLoading, error } = useQuery({
@@ -161,8 +162,8 @@ export function ViewOrderDetailComponent({ orderId }: { orderId: number }) {
                     {/* Product list */}
                     <div className="divide-y divide-neutral-100 dark:divide-stroke-sub-300">
                         {order.orderDetails.map((item) => (
-                            <div key={item.id}>
-                                <div className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                            <div key={item.id} className='my-2'>
+                                <div className="first:pt-0 last:pb-0 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                                     <div className="flex gap-3.5 items-center">
                                         <div className="size-16 bg-neutral-50 dark:bg-bg-surface-850 rounded-lg overflow-hidden flex items-center justify-center p-1 border border-neutral-200 dark:border-transparent shrink-0">
                                             {item.imageKey ? (
@@ -207,7 +208,7 @@ export function ViewOrderDetailComponent({ orderId }: { orderId: number }) {
                                         </div>
                                     </div>
                                 </div>
-                                <div className='py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between'>
+                                <div className='py-3 first:pt-0 last:pb-0 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between'>
                                     {item.serialNumbers?.map((sn, idx) => (
                                         <Tag.Root key={idx} variant='stroke'>
                                             <Tag.Icon as={RiPushpinFill} />

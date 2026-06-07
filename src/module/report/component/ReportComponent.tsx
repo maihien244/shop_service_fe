@@ -1,42 +1,89 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReportParams } from "../service/report-service";
 import { ReportType } from "../dto";
 import { BaoCaoDoanhThuComponent } from "./BaoCaoDoanhThuComponent";
+import { BaoCaoTonKhoComponent } from "./BaoCaoTonKho";
+import { TonKhoHienTaiComponent } from "./TonKhoHienTaiComponent";
 import * as Select from '#/components/ui/select';
 import * as Input from '#/components/ui/input';
 import * as Button from '#/components/ui/button';
 import { LoadingComponent } from '#/components/ui/loading';
+import { useQuery } from "@tanstack/react-query";
+import { WarehouseService } from "#/module/warehouse/servcie/warehouse-service";
+import { useNavigate } from "@tanstack/react-router";
 
-export function ReportComponent({ params }: { params: ReportParams }) {
-    const [selectedReportType, setSelectedReportType] = useState<string>(ReportType.BAO_CAO_DOANH_THU.value);
+export function ReportComponent<T extends ReportParams>({ params }: { params: T }) {
+    const navigate = useNavigate();
+    const [selectedReportType, setSelectedReportType] = useState<string>(params.type || ReportType.BAO_CAO_DOANH_THU.value);
 
     // Manage filter inputs locally
     const [selectedFromDate, setSelectedFromDate] = useState<string>(params.fromDate);
     const [selectedToDate, setSelectedToDate] = useState<string>(params.toDate);
-
-    // Active parameters for the components to fetch
-    const [currentParams, setCurrentParams] = useState<ReportParams>({
-        type: selectedReportType as keyof typeof ReportType,
-        fromDate: params.fromDate,
-        toDate: params.toDate,
-    });
+    const [selectedWarehouseId, setSelectedWarehouseId] = useState<number | undefined>(params?.warehouseId ? Number(params?.warehouseId) : undefined);
+    const warehouseService = useMemo(() => new WarehouseService(), []);
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
-    const handleApplyFilters = () => {
-        setCurrentParams({
-            type: selectedReportType as keyof typeof ReportType,
-            fromDate: selectedFromDate,
-            toDate: selectedToDate,
+    // Sync input states when route search params (props) change
+    useEffect(() => {
+        if (params.type) setSelectedReportType(params.type);
+        if (params.fromDate) setSelectedFromDate(params.fromDate);
+        if (params.toDate) setSelectedToDate(params.toDate);
+        setSelectedWarehouseId(params?.warehouseId ? Number(params?.warehouseId) : undefined);
+    }, [params]);
+
+    const handleReportTypeChange = (value: string) => {
+        setSelectedReportType(value);
+        navigate({
+            to: ".",
+            search: (prev) => ({
+                ...prev,
+                type: value as keyof typeof ReportType,
+            }),
         });
     };
 
+    const handleApplyFilters = () => {
+        navigate({
+            to: ".",
+            search: (prev) => ({
+                ...prev,
+                type: selectedReportType as keyof typeof ReportType,
+                fromDate: selectedFromDate,
+                toDate: selectedToDate,
+                warehouseId: selectedWarehouseId,
+            }),
+        });
+    };
+
+    const handleSelectedWarehouse = (value: string) => {
+        if (value === "all") {
+            setSelectedWarehouseId(undefined);
+        } else {
+            setSelectedWarehouseId(Number(value));
+        }
+    };
+
     const renderReport = () => {
-        switch (selectedReportType) {
+        switch (params.type || selectedReportType) {
             case ReportType.BAO_CAO_DOANH_THU.value:
                 return (
                     <BaoCaoDoanhThuComponent
-                        params={currentParams}
+                        params={params}
+                        setIsLoading={setIsLoading}
+                    />
+                );
+            case ReportType.BAO_CAO_TON_KHO.value:
+                return (
+                    <BaoCaoTonKhoComponent
+                        params={params as any}
+                        setIsLoading={setIsLoading}
+                    />
+                );
+            case ReportType.TON_KHO_HIEN_TAI.value:
+                return (
+                    <TonKhoHienTaiComponent
+                        params={params as any}
                         setIsLoading={setIsLoading}
                     />
                 );
@@ -48,6 +95,11 @@ export function ReportComponent({ params }: { params: ReportParams }) {
                 );
         }
     };
+
+    const { data: warehouses } = useQuery({
+        queryKey: ['warehouses-lookup'],
+        queryFn: () => warehouseService.getList({ size: 100, isActive: 1 }).then((res) => res?.results ?? []),
+    })
 
     return (
         <div className="p-8 space-y-6">
@@ -65,13 +117,13 @@ export function ReportComponent({ params }: { params: ReportParams }) {
             <div className="bg-bg-white-0 dark:bg-bg-weak-50 border border-stroke-soft-200 dark:border-stroke-sub-300 rounded-24 p-6 shadow-regular-sm space-y-4">
                 <h2 className="text-label-md font-bold text-text-strong-950 dark:text-static-white">Bộ lọc báo cáo</h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     {/* Report Type Select */}
                     <div className="space-y-2.5">
                         <label className="text-label-xs font-semibold text-text-sub-600 dark:text-text-soft-400">
                             Loại báo cáo
                         </label>
-                        <Select.Root value={selectedReportType} onValueChange={setSelectedReportType}>
+                        <Select.Root value={selectedReportType} onValueChange={handleReportTypeChange}>
                             <Select.Trigger className="w-full">
                                 <Select.Value placeholder="Chọn loại báo cáo" />
                             </Select.Trigger>
@@ -115,6 +167,26 @@ export function ReportComponent({ params }: { params: ReportParams }) {
                                 />
                             </Input.Wrapper>
                         </Input.Root>
+                    </div>
+
+                    {/* Warehouse Select */}
+                    <div className="space-y-2.5">
+                        <label className="text-label-xs font-semibold text-text-sub-600 dark:text-text-soft-400">
+                            Kho hàng
+                        </label>
+                        <Select.Root value={selectedWarehouseId !== undefined ? selectedWarehouseId.toString() : "all"} onValueChange={(value) => handleSelectedWarehouse(value)}>
+                            <Select.Trigger className="w-full">
+                                <Select.Value placeholder="Chọn kho hàng" />
+                            </Select.Trigger>
+                            <Select.Content>
+                                <Select.Item value={"all"}>Tất cả kho</Select.Item>
+                                {warehouses?.map((warehouse, key) => (
+                                    <Select.Item key={key} value={warehouse.id.toString()}>
+                                        {warehouse.name}
+                                    </Select.Item>
+                                ))}
+                            </Select.Content>
+                        </Select.Root>
                     </div>
 
                     {/* Submit Button */}

@@ -18,6 +18,10 @@ export class AdminOrderService {
         return await this.apiClient.get<CollectionResponse<OrderDto>>(this.adminUrl, { params })
     }
 
+    async getOrder(orderId: number): Promise<OrderDto> {
+        return await this.apiClient.get<OrderDto>(`${this.adminUrl}/${orderId}`)
+    }
+
     async updateProcessStatus(orderId: number, status: keyof typeof ProcessStatus): Promise<OrderDto> {
         return await this.apiClient.put<OrderDto>(`${this.adminUrl}/${orderId}/status`, null, { params: { status } })
     }

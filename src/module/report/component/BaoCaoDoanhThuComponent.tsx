@@ -20,7 +20,7 @@ export function BaoCaoDoanhThuComponent({ params, setIsLoading }: BaoCaoDoanhThu
 
     const reportMutation = useMutation({
         mutationFn: async () => {
-            return await reportService.getReport(params)
+            return await reportService.getReport<Record<string, any>>(params)
         },
         onSuccess: (data: Record<string, any>) => {
             setReport(() => Object.entries(data).map(([key, value]) => ({
